@@ -1,1 +1,39 @@
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+import json
+import os
+
+app = Flask(__name__)
+CORS(app)
+
+DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
+RECIPES_FILE = os.path.join(DATA_DIR, 'recipes.json')
+MEAL_PLANS_FILE = os.path.join(DATA_DIR, 'meal_plans.json')
+
+def load_json(file_path):
+    with open(file_path, 'r') as f:
+        return json.load(f)
+
+def save_json(file_path, data):
+    with open(file_path, 'w') as f:
+        json.dump(data, f, indent=2)
+
+@app.route('/api/recipes', methods=['GET'])
+def get_recipes():
+    return jsonify(load_json(RECIPES_FILE))
+
+@app.route('/api/mealplan', methods=['GET'])
+def get_meal_plan():
+    return jsonify(load_json(MEAL_PLANS_FILE))
+
+@app.route('/api/mealplan', methods=['POST'])
+def add_meal_plan():
+    new_plan = request.get_json()
+    plans = load_json(MEAL_PLANS_FILE)
+    plans.append(new_plan)
+    save_json(MEAL_PLANS_FILE, plans)
+    return jsonify({"status": "success"}), 201
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
